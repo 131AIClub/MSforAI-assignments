@@ -1,22 +1,20 @@
 from __future__ import annotations
 import os
 import time
-import pickle
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import List, Tuple
+from typing import Tuple
 
 # 导入自定义模块
-# 假设 model.py 和 data.py 在同一目录下
 try:
-    from model import Linear, Sigmoid, Softmax, CrossEntropyLoss, MLP
+    from model import MLP, Linear, Sigmoid, Softmax, CrossEntropyLoss
     from data import MNISTLoader, DataLoader, one_hot_encode
 except ImportError:
     # 如果作为脚本直接运行，可能需要调整路径
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    from model import Linear, Sigmoid, Softmax, CrossEntropyLoss, MLP
+    from model import MLP, Linear, Sigmoid, Softmax, CrossEntropyLoss
     from data import MNISTLoader, DataLoader, one_hot_encode
 
 def bench():
@@ -45,7 +43,8 @@ def bench():
             print("  [PASS] Forward pass")
             
         # Backward check
-        grad_output = np.ones_like(out) # Shape (2, 3)
+        # Use expected shape for grad_output, not out.shape (which might be wrong)
+        grad_output = np.ones((2, 3)) 
         lr = 0.1
         
         # Store old params to check update
@@ -106,7 +105,7 @@ def bench():
             print("  [PASS] Forward pass")
             
         # Backward
-        grad_output = np.ones_like(out)
+        grad_output = np.ones((2, 2))
         grad_input = sigmoid.backpropagation(grad_output, 0.1)
         # dL/dx = dL/dy * y * (1-y)
         expected_grad = grad_output * expected_out * (1 - expected_out)
@@ -149,7 +148,7 @@ def bench():
         # unless user implemented full Jacobian. 
         # But we can check if it runs without error.
         try:
-            grad_output = np.ones_like(out)
+            grad_output = np.ones((2, 3))
             grad_input = softmax.backpropagation(grad_output, 0.1)
             # Just check shape matches
             if grad_input.shape != x.shape:
@@ -203,6 +202,7 @@ def bench():
     
     print("\n验证结束。注意：如果测试未通过，请检查 model.py 中的实现。")
     print("--------------------------------------------------")
+    
 
 def evaluate(model: MLP, x: np.ndarray, y: np.ndarray, batch_size: int = 128) -> Tuple[float, float]:
     """
@@ -342,7 +342,6 @@ def plot_history(history, save_dir):
     save_path = os.path.join(save_dir, 'training_history.png')
     plt.savefig(save_path)
     print(f"训练曲线已保存至: {save_path}")
-    # plt.show() # 在无头环境中可能无法显示
 
 def main():
     parser = argparse.ArgumentParser(description='MNIST Training with NumPy')
@@ -364,9 +363,9 @@ def main():
     if not os.path.isabs(args.save_dir):
         # 如果是相对路径，则相对于当前工作目录
         args.save_dir = os.path.join(os.getcwd(), args.save_dir)
-        
+    
+    bench()
     train(args)
 
 if __name__ == "__main__":
-    bench()
     main()

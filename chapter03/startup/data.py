@@ -2,10 +2,9 @@ import os
 import gzip
 import numpy as np
 import urllib.request
-from typing import Tuple, Optional
+from typing import Tuple
 
 # 数据集存储路径
-# 使用基于当前文件位置的相对路径，确保在不同目录下运行时（如 solution 或 startup）都能正确指向同级 data 目录
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 class MNISTLoader:
