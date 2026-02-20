@@ -1,0 +1,307 @@
+"""
+模块名称: model.py
+功能描述: 这是一个用于教学的极简神经网络框架实现，展示了全连接层、激活函数、损失函数和反向传播的核心原理。
+学习目标:
+    1. 理解神经网络的基本构建模块（层、激活、损失）。
+    2. 掌握前向传播（Forward Propagation）的数据流向。
+    3. 掌握反向传播（Backpropagation）的梯度计算与参数更新原理。
+    4. 学习如何使用 NumPy 进行向量化编程以提高效率。
+
+核心概念:
+    - 线性层 (Linear Layer): 执行 y = xW + b 变换。
+    - 激活函数 (Activation): 引入非线性特性（如 Sigmoid）。
+    - 损失函数 (Loss Function): 衡量预测值与真实值的差异（如 MSE）。
+    - 梯度下降 (Gradient Descent): 利用梯度更新参数以最小化损失。
+
+扩展练习建议:
+    1. 尝试修改隐藏层神经元数量 (如改为 2 或 8)，观察收敛速度和最终 Loss 的变化。
+    2. 实现 ReLU 激活函数并替换 Sigmoid，比较两者的训练效果。
+    3. 尝试拟合其他函数，例如 y = sin(x) (需生成新的训练数据)。
+    4. 将 MSELoss 替换为 CrossEntropyLoss (交叉熵损失)，适用于分类问题。
+
+作者: AI Assistant (Refactored for Education)
+日期: 2026-02-20
+"""
+
+import numpy as np
+from typing import List, Tuple, Optional
+
+# 设置随机种子以保证结果可复现
+np.random.seed(42)
+
+class Linear:
+    """
+    全连接层 (Linear Layer)
+    
+    数学公式:
+        Output = Input @ W + b
+    
+    参数:
+        input_dim (int): 输入特征维度
+        output_dim (int): 输出特征维度
+    """
+    def __init__(self, input_dim: int, output_dim: int) -> None:
+        # 初始化权重 (Weights) 和偏置 (Bias)
+        # Xavier 初始化 (Glorot Initialization)
+        # 保持方差一致，有助于 Sigmoid 网络收敛
+        scale = np.sqrt(2.0 / (input_dim + output_dim))
+        self.w = np.random.randn(input_dim, output_dim).astype(np.float32) * scale
+        # 偏置形状: (output_dim,)
+        self.b = np.zeros(output_dim).astype(np.float32)
+        
+        # 用于存储前向传播的输入，供反向传播使用
+        self.input_cache: Optional[np.ndarray] = None
+    
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        """
+        前向传播 (Forward Pass)
+        
+        参数:
+            x (np.ndarray): 输入数据，形状为 (batch_size, input_dim)
+            
+        返回:
+            np.ndarray: 输出数据，形状为 (batch_size, output_dim)
+        """
+        self.input_cache = x
+        # 线性变换: y = xW + b
+        return x @ self.w + self.b
+    
+    def backpropagation(self, grad_output: np.ndarray, lr: float) -> np.ndarray:
+        """
+        反向传播 (Backward Pass)
+        
+        参数:
+            grad_output (np.ndarray): 上一层传回的梯度 dL/dY，形状为 (batch_size, output_dim)
+            lr (float): 学习率
+            
+        返回:
+            np.ndarray: 传递给下一层（即前一层）的梯度 dL/dX，形状为 (batch_size, input_dim)
+        """
+        assert self.input_cache is not None, "必须先调用前向传播 (__call__) 才能调用反向传播"
+        
+        # 1. 计算梯度
+        # dL/dW = X^T @ dL/dY
+        # 形状: (input_dim, batch_size) @ (batch_size, output_dim) -> (input_dim, output_dim)
+        grad_w = self.input_cache.T @ grad_output
+        
+        # dL/db = sum(dL/dY) 沿 batch 维度求和
+        # 形状: (output_dim,)
+        grad_b = np.sum(grad_output, axis=0)
+        
+        # dL/dX = dL/dY @ W^T
+        # 形状: (batch_size, output_dim) @ (output_dim, input_dim) -> (batch_size, input_dim)
+        grad_input = grad_output @ self.w.T
+        
+        # 2. 更新参数 (梯度下降)
+        # W = W - lr * dL/dW
+        self.w -= lr * grad_w
+        # b = b - lr * dL/db
+        self.b -= lr * grad_b
+        
+        return grad_input
+
+class Sigmoid:
+    """
+    Sigmoid 激活函数
+    
+    数学公式:
+        f(x) = 1 / (1 + e^(-x))
+        f'(x) = f(x) * (1 - f(x))
+    """
+    def __init__(self) -> None:
+        self.output_cache: Optional[np.ndarray] = None
+    
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        """
+        前向传播
+        """
+        # 计算 Sigmoid 输出
+        # clip 防止溢出，虽然 float32 范围较大，但 exp(-x) 可能很大
+        self.output_cache = 1 / (1 + np.exp(-x))
+        return self.output_cache
+    
+    def backpropagation(self, grad_output: np.ndarray, lr: float) -> np.ndarray:
+        """
+        反向传播
+        注意: 激活函数没有可学习参数，所以不需要更新参数，只需传递梯度。
+        """
+        assert self.output_cache is not None, "必须先调用前向传播"
+        
+        # 链式法则: dL/dX = dL/dY * dY/dX
+        # dY/dX = y * (1 - y)
+        # 这里的乘法是逐元素乘法 (Element-wise multiplication)
+        grad_input = grad_output * self.output_cache * (1 - self.output_cache)
+        return grad_input
+
+class Softmax:
+    """
+    Softmax 激活函数 (用于多分类输出层)
+    
+    数学公式:
+        f(x)_i = e^(x_i) / sum(e^(x_j))
+    """
+    def __init__(self) -> None:
+        self.output_cache: Optional[np.ndarray] = None
+    
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        """
+        前向传播
+        """
+        # 减去最大值以防止指数爆炸 (数值稳定性技巧)
+        x_max = np.max(x, axis=1, keepdims=True)
+        exp_x = np.exp(x - x_max)
+        self.output_cache = exp_x / np.sum(exp_x, axis=1, keepdims=True)
+        assert self.output_cache is not None, "必须先调用前向传播"
+        return self.output_cache
+    
+    def backpropagation(self, grad_output: np.ndarray, lr: float) -> np.ndarray:
+        """
+        反向传播
+        注意: 通常 Softmax 与 CrossEntropyLoss 结合使用，
+        合并后的梯度计算更简单: pred - target。
+        这里仅提供单独的 Softmax 梯度计算供参考。
+        """
+        # 为了简化，假设这是输出层，直接传递梯度
+        # 在实际实现中，通常 CrossEntropyLoss 会直接计算包含 Softmax 的梯度
+        return grad_output
+
+class CrossEntropyLoss:
+    """
+    交叉熵损失函数 (Cross Entropy Loss)
+    通常用于多分类问题，结合 Softmax 使用
+    
+    数学公式:
+        L = -sum(y_true * log(y_pred))
+    """
+    def __init__(self) -> None:
+        self.pred_cache: Optional[np.ndarray] = None
+        self.labels_cache: Optional[np.ndarray] = None
+        self.epsilon = 1e-12 # 防止 log(0)
+    
+    def __call__(self, pred: np.ndarray, labels: np.ndarray) -> float:
+        """
+        计算损失值
+        
+        参数:
+            pred (np.ndarray): 预测概率 (Softmax 输出)，形状 (batch_size, num_classes)
+            labels (np.ndarray): 真实标签 (One-hot 编码)，形状 (batch_size, num_classes)
+        """
+        self.pred_cache = pred
+        self.labels_cache = labels
+        
+        # 裁剪预测值以避免 log(0)
+        pred = np.clip(pred, self.epsilon, 1. - self.epsilon)
+        
+        # 计算交叉熵: -sum(y * log(p)) / N
+        loss = -float(np.sum(labels * np.log(pred))) / pred.shape[0]
+        return float(loss)
+    
+    def backpropagation(self, lr: float) -> np.ndarray:
+        """
+        反向传播
+        注意: 如果前一层是 Softmax，这里的梯度通常简化为 (pred - labels) / N
+        """
+        assert self.pred_cache is not None and self.labels_cache is not None, "必须先计算损失"
+        
+        batch_size = self.pred_cache.shape[0]
+        # dL/dX = (pred - labels) / N (假设配合 Softmax)
+        grad_input = (self.pred_cache - self.labels_cache) / batch_size
+        return grad_input
+
+
+class MSELoss:
+    """
+    均方误差损失函数 (Mean Squared Error Loss)
+    
+    数学公式:
+        L = (1/N) * sum((y_pred - y_true)^2)
+    """
+    def __init__(self) -> None:
+        self.pred_cache: Optional[np.ndarray] = None
+        self.labels_cache: Optional[np.ndarray] = None
+    
+    def __call__(self, pred: np.ndarray, labels: np.ndarray) -> float:
+        """
+        计算损失值
+        
+        参数:
+            pred (np.ndarray): 预测值，形状 (batch_size, output_dim)
+            labels (np.ndarray): 真实标签，形状 (batch_size, output_dim)
+            
+        返回:
+            float: 标量损失值
+        """
+        self.pred_cache = pred
+        self.labels_cache = labels
+        # 计算 MSE
+        loss = np.mean((pred - labels) ** 2)
+        return float(loss)
+    
+    def backpropagation(self, lr: float) -> np.ndarray:
+        """
+        反向传播，计算损失对预测值的梯度
+        """
+        assert self.pred_cache is not None and self.labels_cache is not None, "必须先计算损失"
+        
+        batch_size = self.pred_cache.shape[0]
+        # dL/d_pred = 2/N * (pred - labels)
+        grad_input = 2 * (self.pred_cache - self.labels_cache) / batch_size
+        return grad_input
+
+class Network:
+    """
+    简单的多层感知机 (MLP) 网络容器
+    
+    结构:
+        Linear -> Sigmoid -> Linear -> Sigmoid ...
+    """
+    def __init__(self, *model_dims: int):
+        """
+        初始化网络结构
+        
+        参数:
+            *model_dims: 各层的维度序列。例如 Network(2, 4, 1) 表示:
+                        输入层 2 维 -> 隐藏层 4 维 -> 输出层 1 维
+        """
+        self.layers = []
+        # 构建层: 遍历维度对 (i, o) 创建 Linear 和 Sigmoid
+        for i, o in zip(model_dims[:-1], model_dims[1:]):
+            self.layers.append(Linear(i, o))
+            self.layers.append(Sigmoid())
+        
+        self.loss_fn = MSELoss()
+        
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        """前向传播: 依次通过所有层"""
+        for layer in self.layers:
+            x = layer(x)
+        return x
+    
+    def backpropagation(self, grad: np.ndarray, lr: float) -> np.ndarray:
+        """反向传播: 逆序通过所有层"""
+        # 从后往前遍历层
+        for layer in reversed(self.layers):
+            grad = layer.backpropagation(grad, lr)
+        return grad
+
+    def train_step(self, x: np.ndarray, labels: np.ndarray, lr: float) -> float:
+        """
+        执行一步训练: 前向传播 -> 计算损失 -> 反向传播
+        
+        返回:
+            float: 当前 batch 的损失值
+        """
+        # 1. 前向传播
+        pred = self(x)
+        
+        # 2. 计算损失
+        loss = self.loss_fn(pred, labels)
+        
+        # 3. 反向传播
+        # 损失函数的梯度起点
+        grad = self.loss_fn.backpropagation(lr)
+        # 网络层的反向传播
+        self.backpropagation(grad, lr)
+        
+        return loss
+
