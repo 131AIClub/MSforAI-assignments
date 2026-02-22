@@ -108,8 +108,14 @@ $$
 $$
 
 ### 如何运行
-在MSforAI-assignments目录下, 运行以下命令:
+在`MSforAI-assignments/`目录下, 运行以下命令:
 ```bash
 python chapter03/startup/main.py
 ```
 会以默认配置运行正确性测试, 并且开始训练一个手写数字识别的模型.
+
+训练完成后, 在`MSforAI-assignments/`目录下, 运行以下命令:
+```bash
+python chapter03/startup/handwriting_canvas.py
+```
+可以运行手写数字识别的可视化界面, 体验你训练的模型.
