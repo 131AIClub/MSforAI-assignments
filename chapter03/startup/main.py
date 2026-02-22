@@ -364,8 +364,8 @@ def main():
         # 如果是相对路径，则相对于当前工作目录
         args.save_dir = os.path.join(os.getcwd(), args.save_dir)
     
-    bench()
     train(args)
 
 if __name__ == "__main__":
+    bench()
     main()
