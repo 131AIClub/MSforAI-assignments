@@ -127,35 +127,6 @@ class CrossEntropyLoss:
         return np.array(0)
 
 
-class MSELoss:
-    """
-    均方误差损失函数 (Mean Squared Error Loss)
-    
-    数学公式:
-        L = (1/N) * sum((y_pred - y_true)^2)
-    """
-    def __init__(self) -> None:
-        pass
-    
-    def __call__(self, pred: np.ndarray, labels: np.ndarray) -> float:
-        """
-        计算损失值
-        
-        参数:
-            pred (np.ndarray): 预测值，形状 (batch_size, output_dim)
-            labels (np.ndarray): 真实标签，形状 (batch_size, output_dim)
-            
-        返回:
-            float: 标量损失值
-        """
-        return 0.
-    
-    def backpropagation(self, lr: float) -> np.ndarray:
-        """
-        反向传播，计算损失对预测值的梯度
-        """
-        return np.array(0)
-
 class MLP:
     """
     多层感知机 (Multi-Layer Perceptron)

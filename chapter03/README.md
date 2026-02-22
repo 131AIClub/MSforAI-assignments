@@ -5,8 +5,10 @@
 ### 任务说明
 使用NumPy实现神经网络训练与推理. MNIST是非常有名的手写数字数据集. 其包含60000张训练样本和10000张测试样本. 
 
-已经实现了MLP的代码框架, 你需要在startup补全以下内容:
+我们已经实现了MLP的代码框架, 你需要在`startup/`目录下补全以下内容:
 `model.py`中的`Linear`, `Sigmoid`, `Softmax`, `CrossEntropyLoss`类.
+
+如果遇到了困难, `solution/`目录下包含了我们实现的参考答案版本, 可以查看.
 
 ### 设计指导
 #### Linear层
@@ -119,3 +121,34 @@ python chapter03/startup/main.py
 python chapter03/startup/handwriting_canvas.py
 ```
 可以运行手写数字识别的可视化界面, 体验你训练的模型.
+
+如果你想运行我们实现的参考答案版本, 可以在`MSforAI-assignments/`目录下, 运行以下命令:
+```bash
+python chapter03/solution/main.py
+```
+
+以及
+```bash
+python chapter03/solution/handwriting_canvas.py
+```
+## 有关训练
+默认配置下, `main.py`中的模型训练配置为:
+- 输入维度: 784 (28x28 像素)
+- 隐藏层维度(hidden_dims): [256, 128]
+- 输出维度: 10 (0-9 数字)
+- 学习率(lr): 0.01
+- 批量大小(batch_size): 64
+- 训练轮数(epochs): 20
+
+你可以在命令行中修改`hidden_dims`, `lr`, `batch_size`, `epochs`参数, 例如:
+```bash
+python chapter03/startup/main.py --hidden_dims 128 64 --lr 0.001 --batch_size 32 --epochs 30
+```
+
+本实践中的运算运行在CPU上, 不使用其它加速硬件. 默认配置下训练需要花费一定时间(大约10+min), 请耐心等待. 对于现代机器来说, 默认配置不需要担心内存不足的问题, 配置肯定是足够的.
+
+训练前, 脚本会尝试寻找`data/`目录下数据集文件, 如果没找到则会自动开始下载. 国内网络环境可能比较缓慢, 但是一般还是可以下载下来的, 可以多等一会. 下载后数据集文件将被存储在`data/`目录下.
+
+训练过程中, 每个epoch都会保存一次模型到`model/`目录下. 注意会覆盖前一次保存的模型. 训练完成后, 你可以在`model/`目录下找到最新的模型文件以及训练时的loss曲线图像.
+
+训练完成后再运行`handwriting_canvas.py`脚本, 可以使用你训练的模型进行手写数字识别.

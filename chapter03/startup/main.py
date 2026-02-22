@@ -353,7 +353,7 @@ def main():
     
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for training')
     parser.add_argument('--epochs', type=int, default=20, help='Number of epochs to train') # 默认20个epoch以确保达到95%准确率
-    parser.add_argument('--lr', type=float, default=0.1, help='Learning rate')
+    parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
     parser.add_argument('--hidden_dims', type=int, nargs='+', default=[256, 128], help='Hidden layer dimensions')
     parser.add_argument('--save_dir', type=str, default=default_model_dir, help='Directory to save model and logs')
     
