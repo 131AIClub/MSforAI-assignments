@@ -18,10 +18,10 @@ $$
 
 其中, $X\in \mathbb{R}^{n\times d}$是输入, $W\in \mathbb{R}^{d\times m}$是权重矩阵, $b\in \mathbb{R}^{1\times m}$是偏置向量, $Y\in \mathbb{R}^{n\times m}$是输出.
 
-实际上, 在计算过程中, $b$ 会进行广播, 在数学上表现为前面乘以一个列向量$\bold{1}_N \in \mathbb{R}^{n\times 1}$, 所以, 实际上的表达式为:
+实际上, 在计算过程中, $b$ 会进行广播, 在数学上表现为前面乘以一个列向量$\mathbf{1}_N \in \mathbb{R}^{n\times 1}$, 所以, 实际上的表达式为:
 
 $$
-Y = XW + \bold{1}_N b 
+Y = XW + \mathbf{1}_N b 
 $$
 
 由于NumPy自带广播机制, 因此实现上的形式依然是第一个式子.
@@ -30,26 +30,26 @@ $$
 
 $$
 \begin{aligned}
-\bold{d}Y &= \bold{d}(XW + \bold{1}_N b) \\
-&= \bold{d}(XW) + \bold{d}(\bold{1}_N b) \\
-&= (\bold{d}X)W + X\bold{d}W + (\bold{d1_N})b + \bold{1}_N\bold{d}b\\
-&= (\bold{d}X)W + X\bold{d}W + \bold{1}_N\bold{d}b \\
+\mathrm{d}Y &= \mathrm{d}(XW + \mathbf{1}_N b) \\
+&= \mathrm{d}(XW) + \mathrm{d}(\mathbf{1}_N b) \\
+&= (\mathrm{d}X)W + X\,\mathrm{d}W + (\mathrm{d}\mathbf{1}_N)b + \mathbf{1}_N\,\mathrm{d}b\\
+&= (\mathrm{d}X)W + X\,\mathrm{d}W + \mathbf{1}_N\,\mathrm{d}b \\
 \end{aligned}
 $$
 
 $\frac{\partial L}{\partial Y}\in\mathbb{R}^{n\times m}$, $\frac{\partial L}{\partial X}\in\mathbb{R}^{n\times d}$, $\frac{\partial L}{\partial W}\in\mathbb{R}^{d\times m}$, $\frac{\partial L}{\partial b}\in\mathbb{R}^{1\times m}$. 这是我们期望的形状. 我们知道:
 
 $$
-\bold{d}L = \text{tr}((\frac{\partial L}{\partial Y})^\bold{T}\bold{d}Y)
+\mathrm{d}L = \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\mathrm{d}Y\right)
 $$
 
-将$\bold{d}Y$替换, 得到:
+将$\mathrm{d}Y$替换, 得到:
 
 $$
 \begin{aligned}
-\bold{d}L &= \text{tr}\{(\frac{\partial L}{\partial Y})^\bold{T}[(\bold{d}X)W + X\bold{d}W + \bold{1}_N\bold{d}b]\}  \\
-&= \text{tr}((\frac{\partial L}{\partial Y})^\bold{T}(\bold{d}X)W) + \text{tr}((\frac{\partial L}{\partial Y})^\bold{T}X\bold{d}W) + 
-\text{tr}((\frac{\partial L}{\partial Y})^\bold{T}\bold{1}_N\bold{d}b) 
+\mathrm{d}L &= \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\big[(\mathrm{d}X)W + X\,\mathrm{d}W + \mathbf{1}_N\,\mathrm{d}b\big]\right)  \\
+&= \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}(\mathrm{d}X)W\right) + \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}X\,\mathrm{d}W\right) + 
+\text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\mathbf{1}_N\,\mathrm{d}b\right) 
 \end{aligned}
 $$
 
@@ -57,13 +57,13 @@ $$
 
 $$
 \begin{aligned}
-\frac{\partial L}{\partial X} &= (W(\frac{\partial L}{\partial W})^\bold{T})^\bold{T} = \frac{\partial L}{\partial Y}W^\bold{T} \\
-\frac{\partial L}{\partial W} &= ((\frac{\partial L}{\partial Y})^\bold{T}X)^\bold{T} = X^T\frac{\partial L}{\partial Y} \\
-\frac{\partial L}{\partial b} &= ((\frac{\partial L}{\partial Y})^\bold{T}\bold{1}_N)^\bold{T} = \bold{1}_N^\bold{T}\frac{\partial L}{\partial Y} \\
+\frac{\partial L}{\partial X} &= \frac{\partial L}{\partial Y}\,W^{\top} \\
+\frac{\partial L}{\partial W} &= X^{\top}\,\frac{\partial L}{\partial Y} \\
+\frac{\partial L}{\partial b} &= \mathbf{1}_N^{\top}\,\frac{\partial L}{\partial Y} \\
 \end{aligned}
 $$
 
-有关$\bold{1}_N^\bold{T}\frac{\partial L}{\partial Y}$, 在实现上就是对$\frac{\partial L}{\partial Y}$的每一行求和.
+有关$\mathbf{1}_N^{\top}\frac{\partial L}{\partial Y}$, 在实现上就是对$\frac{\partial L}{\partial Y}$的每一行求和.
 
 #### Sigmoid层
 Sigmoid层的前向传播公式为:
@@ -87,24 +87,26 @@ Y = \text{softmax}(X) = \frac{e^X}{\sum_{i=1}^N e^{X_i}}
 $$
 
 其中, $X\in \mathbb{R}^{n\times D}$是输入, $Y\in \mathbb{R}^{n\times D}$是输出.
-反向传播的公式为:
+反向传播说明:
 
 $$
-\frac{\partial L}{\partial X} = \frac{\partial L}{\partial Y} \odot Y \odot (1 - Y)
+\text{若与 CrossEntropyLoss 合并, } \quad \frac{\partial L}{\partial X} = \frac{Y - T}{N}
 $$
+
+若单独对 Softmax 求导, 其雅可比为 $\frac{\partial Y}{\partial X} = \mathrm{diag}(Y) - Y Y^{\top}$, 反向传播为将上式作用于 $\frac{\partial L}{\partial Y}$（逐样本计算）。
 
 #### CrossEntropyLoss层
 CrossEntropyLoss层的前向传播公式为:
 
 $$
-L = -\frac{1}{N}\sum_{i=1}^N{\bold{y}_i}\log{\hat{\bold{y}}_i}
+L = -\frac{1}{N}\sum_{i=1}^N{\mathbf{y}_i}\log{\hat{\mathbf{y}}_i}
 $$
 
-其中, $\bold{y}$为标签向量, $\hat{\bold{y}}$为模型预测向量. $N$为向量长度.
+其中, $\mathbf{y}$为标签向量, $\hat{\mathbf{y}}$为模型预测向量. $N$为向量长度.
 反向传播的公式为:
 
 $$
-\frac{\partial L}{\partial \hat{\bold{y}}} = -\frac{1}{N}\frac{\bold{y}}{\bold{\hat{y}}}
+\frac{\partial L}{\partial \hat{\mathbf{y}}} = -\frac{1}{N}\frac{\mathbf{y}}{\hat{\mathbf{y}}}
 $$
 
 ### 如何运行
