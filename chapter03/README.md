@@ -32,24 +32,24 @@ $$
 \begin{aligned}
 \mathrm{d}Y &= \mathrm{d}(XW + \mathbf{1}_N b) \\
 &= \mathrm{d}(XW) + \mathrm{d}(\mathbf{1}_N b) \\
-&= (\mathrm{d}X)W + X\,\mathrm{d}W + (\mathrm{d}\mathbf{1}_N)b + \mathbf{1}_N\,\mathrm{d}b\\
-&= (\mathrm{d}X)W + X\,\mathrm{d}W + \mathbf{1}_N\,\mathrm{d}b \\
+&= (\mathrm{d}X)W + X\mathrm{d}W + (\mathrm{d}\mathbf{1}_N)b + \mathbf{1}_N\mathrm{d}b\\
+&= (\mathrm{d}X)W + X\mathrm{d}W + \mathbf{1}_N\mathrm{d}b \\
 \end{aligned}
 $$
 
 $\frac{\partial L}{\partial Y}\in\mathbb{R}^{n\times m}$, $\frac{\partial L}{\partial X}\in\mathbb{R}^{n\times d}$, $\frac{\partial L}{\partial W}\in\mathbb{R}^{d\times m}$, $\frac{\partial L}{\partial b}\in\mathbb{R}^{1\times m}$. 这是我们期望的形状. 我们知道:
 
 $$
-\mathrm{d}L = \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\mathrm{d}Y\right)
+\mathrm{d}L = \text{tr}\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\mathrm{d}Y\right)
 $$
 
 将$\mathrm{d}Y$替换, 得到:
 
 $$
 \begin{aligned}
-\mathrm{d}L &= \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\big[(\mathrm{d}X)W + X\,\mathrm{d}W + \mathbf{1}_N\,\mathrm{d}b\big]\right)  \\
-&= \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}(\mathrm{d}X)W\right) + \text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}X\,\mathrm{d}W\right) + 
-\text{tr}\!\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\mathbf{1}_N\,\mathrm{d}b\right) 
+\mathrm{d}L &= \text{tr}\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\big[(\mathrm{d}X)W + X\mathrm{d}W + \mathbf{1}_N\mathrm{d}b\big]\right)  \\
+&= \text{tr}\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}(\mathrm{d}X)W\right) + \text{tr}\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}X\mathrm{d}W\right) + 
+\text{tr}\left(\left(\frac{\partial L}{\partial Y}\right)^{\top}\mathbf{1}_N\mathrm{d}b\right) 
 \end{aligned}
 $$
 
@@ -57,9 +57,9 @@ $$
 
 $$
 \begin{aligned}
-\frac{\partial L}{\partial X} &= \frac{\partial L}{\partial Y}\,W^{\top} \\
-\frac{\partial L}{\partial W} &= X^{\top}\,\frac{\partial L}{\partial Y} \\
-\frac{\partial L}{\partial b} &= \mathbf{1}_N^{\top}\,\frac{\partial L}{\partial Y} \\
+\frac{\partial L}{\partial X} &= \frac{\partial L}{\partial Y}W^{\top} \\
+\frac{\partial L}{\partial W} &= X^{\top}\frac{\partial L}{\partial Y} \\
+\frac{\partial L}{\partial b} &= \mathbf{1}_N^{\top}\frac{\partial L}{\partial Y} \\
 \end{aligned}
 $$
 
@@ -87,13 +87,11 @@ Y = \text{softmax}(X) = \frac{e^X}{\sum_{i=1}^N e^{X_i}}
 $$
 
 其中, $X\in \mathbb{R}^{n\times D}$是输入, $Y\in \mathbb{R}^{n\times D}$是输出.
-反向传播说明:
+反向传播:
 
 $$
-\text{若与 CrossEntropyLoss 合并, } \quad \frac{\partial L}{\partial X} = \frac{Y - T}{N}
+\frac{\partial L}{\partial X} = \frac{\partial L}{\partial Y}\odot Y\odot(1 - Y)
 $$
-
-若单独对 Softmax 求导, 其雅可比为 $\frac{\partial Y}{\partial X} = \mathrm{diag}(Y) - Y Y^{\top}$, 反向传播为将上式作用于 $\frac{\partial L}{\partial Y}$（逐样本计算）。
 
 #### CrossEntropyLoss层
 CrossEntropyLoss层的前向传播公式为:
