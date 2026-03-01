@@ -49,4 +49,5 @@ chapter03/**/model/
 chapter03/**/model/**
 chapter03/**/data/*.gz
 chapter03/**/data/*.idx*
+chapter03/data/
 

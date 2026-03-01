@@ -33,15 +33,25 @@ except ImportError:
     print("Please install required packages: pip install pytest rich")
     sys.exit(1)
 
+# Import shared modules
+try:
+    import data
+    import handwriting_canvas
+except ImportError as e:
+    print(f"Error importing shared modules: {e}")
+    sys.exit(1)
+
 # Global placeholders for dynamic imports
 MLP = None
 Linear = None
 Sigmoid = None
 Softmax = None
 CrossEntropyLoss = None
-MNISTLoader = None
-DataLoader = None
-one_hot_encode = None
+
+# Static imports from data module
+MNISTLoader = data.MNISTLoader
+DataLoader = data.DataLoader
+one_hot_encode = data.one_hot_encode
 
 class Hyperparameters:
     def __init__(self, args):
@@ -57,9 +67,8 @@ class Hyperparameters:
         self.last_update_time = datetime.datetime.now()
 
 def load_modules(mode):
-    """Dynamically load model and data modules based on mode"""
+    """Dynamically load model module based on mode"""
     global MLP, Linear, Sigmoid, Softmax, CrossEntropyLoss
-    global MNISTLoader, DataLoader, one_hot_encode
     
     base_dir = os.path.dirname(os.path.abspath(__file__))
     target_dir = os.path.join(base_dir, mode)
@@ -72,10 +81,8 @@ def load_modules(mode):
         sys.path.insert(0, target_dir)
     
     try:
-        import model
-        import data
+        import startup.model as model
         importlib.reload(model)
-        importlib.reload(data)
         
         MLP = model.MLP
         Linear = model.Linear
@@ -83,13 +90,9 @@ def load_modules(mode):
         Softmax = model.Softmax
         CrossEntropyLoss = model.CrossEntropyLoss
         
-        MNISTLoader = data.MNISTLoader
-        DataLoader = data.DataLoader
-        one_hot_encode = data.one_hot_encode
-        
-        print(f"Successfully loaded modules from {mode}")
+        print(f"Successfully loaded model from {mode}")
     except ImportError as e:
-        print(f"Failed to import modules from {mode}: {e}")
+        print(f"Failed to import model from {mode}: {e}")
         sys.exit(1)
 
 def get_args():
@@ -263,11 +266,12 @@ def bench(mode, initial_args=None):
         table.add_row("5", "Test CrossEntropyLoss", "Loss calculation & Gradient")
         table.add_row("6", "Start Training", "Train model on MNIST (main)")
         table.add_row("7", "Hyperparameters", "Configure training parameters")
+        table.add_row("8", "Handwriting App", "Draw digits and recognize (GUI)")
         table.add_row("0", "Exit", "Exit application")
         
         console.print(Panel(table, title="Main Menu", border_style="blue"))
         
-        choice = IntPrompt.ask("Select an option", choices=["0", "1", "2", "3", "4", "5", "6", "7"], default=1)
+        choice = IntPrompt.ask("Select an option", choices=["0", "1", "2", "3", "4", "5", "6", "7", "8"], default=1)
         
         if choice == 0:
             console.print("[yellow]Goodbye![/yellow]")
@@ -294,6 +298,17 @@ def bench(mode, initial_args=None):
                 console.input("\nPress Enter to continue...")
         elif choice == 7:
             configure_hyperparameters(config)
+        elif choice == 8:
+            try:
+                console.print(Panel("Launching Handwriting App...", style="bold green"))
+                # Pass MLP class and model save directory
+                handwriting_canvas.run_app(MLP, config.save_dir)
+                console.print("[green]Handwriting App closed.[/green]")
+                console.input("\nPress Enter to return to menu...")
+            except Exception as e:
+                console.print(f"[bold red]Error launching handwriting app: {e}[/bold red]")
+                console.print_exception()
+                console.input("\nPress Enter to continue...")
 
 def evaluate(model, x: np.ndarray, y: np.ndarray, batch_size: int = 128) -> Tuple[float, float]:
     """

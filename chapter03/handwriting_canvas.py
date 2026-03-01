@@ -16,20 +16,12 @@ def get_lanczos_filter():
 
 LANCZOS = get_lanczos_filter()
 
-# 添加当前目录到 sys.path 以便导入 model.py
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_dir)
-
-try:
-    from model import MLP
-except ImportError:
-    print("警告：无法导入 model.py，请确保文件在同一目录下。")
-    MLP = None
-
 class HandwritingApp:
-    def __init__(self, root):
+    def __init__(self, root, mlp_class, model_dir):
         self.root = root
         self.root.title("手写数字识别 (Handwriting Digit Recognition)")
+        self.mlp_class = mlp_class
+        self.model_dir = model_dir
         
         # 1. 创建界面元素
         # 画布设置
@@ -88,18 +80,21 @@ class HandwritingApp:
         # 优先查找 model.h5 (用户要求)，其次查找 best_model.pkl (本项目默认输出)
         # 搜索路径包括当前目录和 model 子目录
         possible_paths = [
+            os.path.join(self.model_dir, "model.h5"),
+            os.path.join(self.model_dir, "best_model.pkl"),
             "model.h5", 
-            os.path.join("model", "model.h5"),
-            "best_model.pkl",
-            os.path.join("model", "best_model.pkl")
+            "best_model.pkl"
         ]
         
         loaded = False
-        for path in possible_paths:
-            full_path = os.path.join(current_dir, path)
+        for full_path in possible_paths:
+            # 如果是相对路径，转换为绝对路径
+            if not os.path.isabs(full_path):
+                full_path = os.path.abspath(full_path)
+                
             if os.path.exists(full_path):
                 try:
-                    if path.endswith(".h5"):
+                    if full_path.endswith(".h5"):
                         # 如果是 h5 文件，尝试使用 keras 加载
                         import tensorflow as tf
                         self.model = tf.keras.models.load_model(full_path)
@@ -107,10 +102,10 @@ class HandwritingApp:
                         print(f"成功加载 Keras 模型: {full_path}")
                     else:
                         # 默认加载本项目自定义 MLP 模型
-                        if MLP is None:
+                        if self.mlp_class is None:
                             raise ImportError("无法导入 MLP 类")
-                        # 注意：需要知道模型结构参数。默认使用 main.py 中的参数 [256, 128]
-                        self.model = MLP(784, [256, 128], 10)
+                        # 注意：需要知道模型结构参数。默认使用 [256, 128]
+                        self.model = self.mlp_class(784, [256, 128], 10)
                         self.model.load(full_path)
                         self.model_type = "custom"
                         print(f"成功加载自定义 MLP 模型: {full_path}")
@@ -120,7 +115,7 @@ class HandwritingApp:
                     print(f"尝试加载 {full_path} 失败: {e}")
         
         if not loaded:
-            err_msg = "未找到模型文件！\n请确保目录下存在 model.h5 或 best_model.pkl"
+            err_msg = f"未找到模型文件！\n请确保目录下存在 model.h5 或 best_model.pkl\n搜索路径: {self.model_dir}"
             self.lbl_result.config(text="错误：模型未加载", fg="red")
             messagebox.showerror("模型加载失败", err_msg)
     
@@ -204,7 +199,7 @@ class HandwritingApp:
             traceback.print_exc()
             messagebox.showerror("识别错误", f"识别过程出错: {e}")
 
-if __name__ == "__main__":
+def run_app(mlp_class, model_dir):
     root = tk.Tk()
     # 设置窗口居中
     window_width = 450
@@ -215,5 +210,16 @@ if __name__ == "__main__":
     y_cordinate = int((screen_height/2) - (window_height/2))
     root.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
     
-    app = HandwritingApp(root)
+    app = HandwritingApp(root, mlp_class, model_dir)
     root.mainloop()
+
+if __name__ == "__main__":
+    # Standalone testing only
+    print("This module is intended to be run from main.py")
+    # Mock MLP for testing UI if run directly
+    class MockMLP:
+        def __init__(self, *args): pass
+        def load(self, path): pass
+        def forward(self, x): return np.array([[0.1]*10])
+    
+    run_app(MockMLP, ".")

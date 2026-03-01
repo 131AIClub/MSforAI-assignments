@@ -113,6 +113,7 @@ class Softmax:
             np.ndarray: 输出数据，形状为 (batch_size, input_dim)
         你需要补全该方法，实现前向传播。
         公式: f(x)_i = e^(x_i) / sum(e^(x_j))
+        note: 你需要将每个输入值减去这组输入中的最大值, 防止溢出. 这将会被检查.
         """
         return np.array(0)
     

@@ -2,9 +2,10 @@ import os
 import gzip
 import numpy as np
 import urllib.request
-from typing import Tuple
+from typing import Tuple, Optional
 
 # 数据集存储路径
+# 修改为统一存储在 chapter03/data 目录下
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 class MNISTLoader:

@@ -116,11 +116,6 @@ python chapter03/main.py
 ```
 在命令行中会出现本章节的TUI界面. 可以选择startup模式或solution模式. 你可以选择测试与训练你的模型.
 
-你可以运行下面的命令来体验你训练好的模型.
-```bash
-python chapter03/solution/handwriting_canvas.py
-```
-## 有关训练
 默认配置下, `main.py`中的模型训练配置为:
 - 输入维度: 784 (28x28 像素)
 - 隐藏层维度(hidden_dims): [256, 128]
@@ -131,31 +126,35 @@ python chapter03/solution/handwriting_canvas.py
 
 你可以在TUI中修改`hidden_dims`, `lr`, `batch_size`, `epochs`参数:
 ```bash
-                                                                                ███╗   ███╗███╗   ██╗██╗███████╗████████╗
-                                                                                ████╗ ████║████╗  ██║██║██╔════╝╚══██╔══╝
-                                                                                 ██╔████╔██║██╔██╗ ██║██║███████╗   ██║
-                                                                                 ██║╚██╔╝██║██║╚██╗██║██║╚════██║   ██║
-                                                                                 ██║ ╚═╝ ██║██║ ╚████║██║███████║   ██║
-                                                                                 ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝   ╚═╝
-                                                                                         Model Verification & Benchmark
-                                                                                                    [Mode: STARTUP]
 
-╭────────────────────────────────────────────────────────────────────────────────────────────── Main Menu ──────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ┏━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                                                                                                             │
-│ ┃ ID   ┃ Option                ┃                            Description ┃                                                                                                                             │
-│ ┡━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                                                                                                             │
-│ │ 1    │ Run All Tests         │     Run complete test suite via Pytest │                                                                                                                             │
-│ │ 2    │ Test Linear Layer     │ Forward, Backward, Gradient, Stability │                                                                                                                             │
-│ │ 3    │ Test Sigmoid          │             Activation function checks │                                                                                                                             │
-│ │ 4    │ Test Softmax          │        Probability distribution checks │                                                                                                                             │
-│ │ 5    │ Test CrossEntropyLoss │            Loss calculation & Gradient │                                                                                                                             │
-│ │ 6    │ Start Training        │            Train model on MNIST (main) │                                                                                                                             │
-│ │ 7    │ Hyperparameters       │          Configure training parameters │                                                                                                                             │
-│ │ 0    │ Exit                  │                       Exit application │                                                                                                                             │
-│ └──────┴───────────────────────┴────────────────────────────────────────┘                                                                                                                             │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+                                                        ███╗   ███╗███╗   ██╗██╗███████╗████████╗
+                                                        ████╗ ████║████╗  ██║██║██╔════╝╚══██╔══╝
+                                                         ██╔████╔██║██╔██╗ ██║██║███████╗   ██║
+                                                         ██║╚██╔╝██║██║╚██╗██║██║╚════██║   ██║
+                                                         ██║ ╚═╝ ██║██║ ╚████║██║███████║   ██║
+                                                         ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝   ╚═╝
+                                                                 Model Verification & Benchmark
+                                                                            [Mode: STARTUP]
+
+╭────────────────────────────────────────────────────────────────────── Main Menu ──────────────────────────────────────────────────────────────────────╮
+│ ┏━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                                                             │
+│ ┃ ID   ┃ Option                ┃                            Description ┃                                                                             │
+│ ┡━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                                                             │
+│ │ 1    │ Run All Tests         │     Run complete test suite via Pytest │                                                                             │
+│ │ 2    │ Test Linear Layer     │ Forward, Backward, Gradient, Stability │                                                                             │
+│ │ 3    │ Test Sigmoid          │             Activation function checks │                                                                             │
+│ │ 4    │ Test Softmax          │        Probability distribution checks │                                                                             │
+│ │ 5    │ Test CrossEntropyLoss │            Loss calculation & Gradient │                                                                             │
+│ │ 6    │ Start Training        │            Train model on MNIST (main) │                                                                             │
+│ │ 7    │ Hyperparameters       │          Configure training parameters │                                                                             │
+│ │ 8    │ Handwriting App       │        Draw digits and recognize (GUI) │                                                                             │
+│ │ 0    │ Exit                  │                       Exit application │                                                                             │
+│ └──────┴───────────────────────┴────────────────────────────────────────┘                                                                             │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 你需要输入7来进入超参数配置界面, 修改这些训练参数.
+
+你可以输入8来启动手写识别应用. 应用会打开一个GUI窗口, 你可以在窗口中绘制数字, 应用会使用你训练的模型来识别你的绘制.
 
 ## 其它
 

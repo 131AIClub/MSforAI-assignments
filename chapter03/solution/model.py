@@ -138,9 +138,22 @@ class Softmax:
         合并后的梯度计算更简单: pred - target。
         这里仅提供单独的 Softmax 梯度计算供参考。
         """
-        # 为了简化，假设这是输出层，直接传递梯度
-        # 在实际实现中，通常 CrossEntropyLoss 会直接计算包含 Softmax 的梯度
-        return grad_output
+        assert self.output_cache is not None, "必须先调用前向传播"
+        
+        batch_size, num_classes = self.output_cache.shape
+        # 向量化计算梯度，避免使用 for 循环
+        # dL/dX = S * (dL/dY) - S * (S . dL/dY)
+        s = self.output_cache
+        # 逐元素相乘: S * dL/dY
+        term1 = s * grad_output
+        # 计算点积部分 (S . dL/dY)，并保持维度以便广播
+        dot_product = np.sum(term1, axis=1, keepdims=True)
+        # S * (S . dL/dY)
+        term2 = s * dot_product
+        
+        grad_input = term1 - term2
+            
+        return grad_input
 
 class CrossEntropyLoss:
     """
@@ -176,13 +189,20 @@ class CrossEntropyLoss:
     def backpropagation(self, lr: float) -> np.ndarray:
         """
         反向传播
-        注意: 如果前一层是 Softmax，这里的梯度通常简化为 (pred - labels) / N
+        dL/d_pred = -y_true / y_pred
         """
         assert self.pred_cache is not None and self.labels_cache is not None, "必须先计算损失"
         
         batch_size = self.pred_cache.shape[0]
-        # dL/dX = (pred - labels) / N (假设配合 Softmax)
-        grad_input = (self.pred_cache - self.labels_cache) / batch_size
+        
+        # 裁剪预测值，避免除以零
+        # 注意：这里需要与前向传播使用相同的 epsilon 策略保持一致
+        safe_pred = np.clip(self.pred_cache, self.epsilon, 1. - self.epsilon)
+        
+        # dL/d_pred = - (y_true / y_pred) / N
+        # 这里的除以 N 是因为损失函数中对 batch 进行了平均
+        grad_input = - (self.labels_cache / safe_pred) / batch_size
+        
         return grad_input
 
 
