@@ -112,22 +112,11 @@ $$
 ### 如何运行
 在`MSforAI-assignments/`目录下, 运行以下命令:
 ```bash
-python chapter03/startup/main.py
+python chapter03/main.py
 ```
-会以默认配置运行正确性测试, 并且开始训练一个手写数字识别的模型.
+在命令行中会出现本章节的TUI界面. 可以选择startup模式或solution模式. 你可以选择测试与训练你的模型.
 
-训练完成后, 在`MSforAI-assignments/`目录下, 运行以下命令:
-```bash
-python chapter03/startup/handwriting_canvas.py
-```
-可以运行手写数字识别的可视化界面, 体验你训练的模型.
-
-如果你想运行我们实现的参考答案版本, 可以在`MSforAI-assignments/`目录下, 运行以下命令:
-```bash
-python chapter03/solution/main.py
-```
-
-以及
+你可以运行下面的命令来体验你训练好的模型.
 ```bash
 python chapter03/solution/handwriting_canvas.py
 ```
@@ -140,10 +129,35 @@ python chapter03/solution/handwriting_canvas.py
 - 批量大小(batch_size): 64
 - 训练轮数(epochs): 20
 
-你可以在命令行中修改`hidden_dims`, `lr`, `batch_size`, `epochs`参数, 例如:
+你可以在TUI中修改`hidden_dims`, `lr`, `batch_size`, `epochs`参数:
 ```bash
-python chapter03/startup/main.py --hidden_dims 128 64 --lr 0.001 --batch_size 32 --epochs 30
+                                                                                ███╗   ███╗███╗   ██╗██╗███████╗████████╗
+                                                                                ████╗ ████║████╗  ██║██║██╔════╝╚══██╔══╝
+                                                                                 ██╔████╔██║██╔██╗ ██║██║███████╗   ██║
+                                                                                 ██║╚██╔╝██║██║╚██╗██║██║╚════██║   ██║
+                                                                                 ██║ ╚═╝ ██║██║ ╚████║██║███████║   ██║
+                                                                                 ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝   ╚═╝
+                                                                                         Model Verification & Benchmark
+                                                                                                    [Mode: STARTUP]
+
+╭────────────────────────────────────────────────────────────────────────────────────────────── Main Menu ──────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ┏━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                                                                                                             │
+│ ┃ ID   ┃ Option                ┃                            Description ┃                                                                                                                             │
+│ ┡━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                                                                                                             │
+│ │ 1    │ Run All Tests         │     Run complete test suite via Pytest │                                                                                                                             │
+│ │ 2    │ Test Linear Layer     │ Forward, Backward, Gradient, Stability │                                                                                                                             │
+│ │ 3    │ Test Sigmoid          │             Activation function checks │                                                                                                                             │
+│ │ 4    │ Test Softmax          │        Probability distribution checks │                                                                                                                             │
+│ │ 5    │ Test CrossEntropyLoss │            Loss calculation & Gradient │                                                                                                                             │
+│ │ 6    │ Start Training        │            Train model on MNIST (main) │                                                                                                                             │
+│ │ 7    │ Hyperparameters       │          Configure training parameters │                                                                                                                             │
+│ │ 0    │ Exit                  │                       Exit application │                                                                                                                             │
+│ └──────┴───────────────────────┴────────────────────────────────────────┘                                                                                                                             │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
+你需要输入7来进入超参数配置界面, 修改这些训练参数.
+
+## 其它
 
 本实践中的运算运行在CPU上, 不使用其它加速硬件. 默认配置下训练需要花费一定时间(大约10+min), 请耐心等待. 对于现代机器来说, 默认配置不需要担心内存不足的问题, 配置肯定是足够的.
 
