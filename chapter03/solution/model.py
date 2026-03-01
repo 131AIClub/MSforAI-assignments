@@ -218,7 +218,7 @@ class MLP:
         for layer in reversed(self.layers):
             grad = layer.backpropagation(grad, lr)
 
-    def save(self, filepath: str):
+    def save(self, filepath: str, verbose: bool = True):
         """保存模型参数"""
         # 只保存有参数的层 (Linear)
         params = []
@@ -228,7 +228,8 @@ class MLP:
         
         with open(filepath, 'wb') as f:
             pickle.dump(params, f)
-        print(f"模型已保存至: {filepath}")
+        if verbose:
+            print(f"模型已保存至: {filepath}")
 
     def load(self, filepath: str):
         """加载模型参数"""
