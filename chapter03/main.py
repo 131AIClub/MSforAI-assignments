@@ -81,7 +81,13 @@ def load_modules(mode):
         sys.path.insert(0, target_dir)
     
     try:
-        import startup.model as model
+        # Check if 'model' is already imported and unload it if necessary
+        # This is crucial because Python caches imports. If we previously imported 'model' 
+        # (e.g. from a different path), it won't be re-imported even if sys.path changed.
+        if 'model' in sys.modules:
+            del sys.modules['model']
+            
+        import model
         importlib.reload(model)
         
         MLP = model.MLP

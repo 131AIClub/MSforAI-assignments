@@ -1,7 +1,47 @@
 
 import pytest
 import numpy as np
-from startup.model import Linear, Sigmoid, Softmax, CrossEntropyLoss
+import sys
+import os
+
+# Dynamically import based on pytest mode (handled in conftest.py via sys.path)
+# However, if we hardcode 'from startup.model import ...', it defeats the purpose.
+# We need to import 'model' which will resolve to either startup/model.py or solution/model.py
+try:
+    from model import Linear, Sigmoid, Softmax, CrossEntropyLoss
+except ImportError:
+    # Fallback or error handling if model is not found in path
+    # This might happen if conftest.py hasn't run yet or path isn't set
+    # But conftest.py runs before test collection usually.
+    # Let's try to be robust.
+    pass
+
+@pytest.fixture
+def layer(request, mode):
+    # Dynamically import the class based on request.param (class name)
+    # and the mode (startup vs solution)
+    
+    # Reload module to ensure we get the right one
+    if 'model' in sys.modules:
+        del sys.modules['model']
+        
+    try:
+        import model
+        from importlib import reload
+        reload(model)
+        
+        layer_cls = getattr(model, request.param)
+        
+        if request.param == 'Linear':
+            return layer_cls(5, 2)
+        else:
+            return layer_cls()
+    except ImportError:
+        pytest.fail(f"Could not import model from path: {sys.path}")
+
+@pytest.fixture
+def mode(request):
+    return request.config.getoption("--mode")
 
 # Numerical gradient checking utility
 def compute_numerical_gradient(layer, x, epsilon=1e-5):
@@ -80,9 +120,19 @@ def check_gradient(layer, x, grad_output, epsilon=1e-5):
 # --- Linear Layer Tests ---
 class TestLinear:
     @pytest.fixture
-    def layer(self):
-        np.random.seed(42)
-        return Linear(3, 2)
+    def layer(self, mode):
+        # Dynamically import Linear based on mode
+        # Reload module to ensure we get the right one
+        if 'model' in sys.modules:
+            del sys.modules['model']
+            
+        try:
+            import model
+            from importlib import reload
+            reload(model)
+            return model.Linear(3, 2)
+        except ImportError:
+             pytest.fail(f"Could not import model from path: {sys.path}")
 
     def test_forward_shape(self, layer):
         x = np.random.randn(5, 3)
@@ -149,8 +199,18 @@ class TestLinear:
 # --- Sigmoid Layer Tests ---
 class TestSigmoid:
     @pytest.fixture
-    def layer(self):
-        return Sigmoid()
+    def layer(self, mode):
+        # Dynamically import based on mode
+        if 'model' in sys.modules:
+            del sys.modules['model']
+            
+        try:
+            import model
+            from importlib import reload
+            reload(model)
+            return model.Sigmoid()
+        except ImportError:
+             pytest.fail(f"Could not import model from path: {sys.path}")
 
     def test_forward_value(self, layer):
         x = np.array([[0.0], [100.0], [-100.0]])
@@ -170,8 +230,18 @@ class TestSigmoid:
 # --- Softmax Layer Tests ---
 class TestSoftmax:
     @pytest.fixture
-    def layer(self):
-        return Softmax()
+    def layer(self, mode):
+        # Dynamically import based on mode
+        if 'model' in sys.modules:
+            del sys.modules['model']
+            
+        try:
+            import model
+            from importlib import reload
+            reload(model)
+            return model.Softmax()
+        except ImportError:
+             pytest.fail(f"Could not import model from path: {sys.path}")
 
     def test_output_sum_to_one(self, layer):
         x = np.random.randn(5, 10)
@@ -217,8 +287,18 @@ class TestSoftmax:
 # --- CrossEntropyLoss Tests ---
 class TestCrossEntropyLoss:
     @pytest.fixture
-    def layer(self):
-        return CrossEntropyLoss()
+    def layer(self, mode):
+        # Dynamically import based on mode
+        if 'model' in sys.modules:
+            del sys.modules['model']
+            
+        try:
+            import model
+            from importlib import reload
+            reload(model)
+            return model.CrossEntropyLoss()
+        except ImportError:
+             pytest.fail(f"Could not import model from path: {sys.path}")
 
     def test_loss_value(self, layer):
         # pred: 0.5, true: 1 -> -log(0.5) approx 0.693
