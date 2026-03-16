@@ -75,7 +75,7 @@ class Linear:
         self.b -= lr * grad_b
         
         return grad_input
-        
+
 
 class Sigmoid:
     """
@@ -110,6 +110,7 @@ class Sigmoid:
         grad_input = grad_output * self.output_cache * (1 - self.output_cache)
         return grad_input
 
+
 class Softmax:
     """
     Softmax 激活函数 (用于多分类输出层)
@@ -132,11 +133,11 @@ class Softmax:
         return self.output_cache
     
     def backpropagation(self, grad_output: np.ndarray, lr: float) -> np.ndarray:
-        """
-        反向传播
+        """反向传播
         注意: 通常 Softmax 与 CrossEntropyLoss 结合使用，
         合并后的梯度计算更简单: pred - target。
         这里仅提供单独的 Softmax 梯度计算供参考。
+        
         """
         assert self.output_cache is not None, "必须先调用前向传播"
         
